@@ -14,6 +14,13 @@ source "$SCRIPT_DIR/.env"
 : "${NTFY_URL:?NTFY_URL must be set in .env}"
 : "${NTFY_TOPIC:?NTFY_TOPIC must be set in .env}"
 
+FORCE=false
+for arg in "$@"; do
+  case "$arg" in
+    -f|--force) FORCE=true ;;
+  esac
+done
+
 report=""
 
 for repo_dir in "$REPOS_DIR"/*/; do
@@ -56,6 +63,10 @@ for repo_dir in "$REPOS_DIR"/*/; do
     report+="• $name: $issue_str\n"
   fi
 done
+
+if [ "$FORCE" = true ] && [ -z "$report" ]; then
+  report="• No issues found — all repos are clean.\n"
+fi
 
 if [ -n "$report" ]; then
   body="$(printf "Repo status for %s:\n\n%b" "$(date '+%A, %B %d')" "$report")"
